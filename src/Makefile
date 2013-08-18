@@ -10,6 +10,10 @@ HOBJ   := $(patsubst %.h,obj/%_h.o,$(CHDR))
 JITOBJS:= $(patsubst %,obj/jit_%.o,$(JITSRC))
 EXTRAOBJS := obj/jit_tprof.o obj/jit_vmprof.o obj/strict.o
 MDOBJS := $(patsubst %, doc/obj/%.md, $(LUASRC) $(CSRC) $(CHDR)) $(wildcard *.md)
+LIBNAME := libsnabbswitch.so.0.0
+# exclude snabbswitch.c as includes main()
+LIBCSRC := lib.c memory.c pci.c snabb_lib_init.c tuntap.c virtio_vhost_client.c
+LIBCOBJ := $(patsubst %.c,obj/%.o,$(LIBCSRC))
 
 PATH := ../deps/luajit/usr/local/bin:$(PATH)
 
@@ -22,11 +26,16 @@ snabbswitch: $(LUAOBJ) $(HOBJ) $(COBJ) $(JITOBJS) $(EXTRAOBJS)
 	@echo -n "Firmware: "
 	@ls -sh snabbswitch
 
+so: obj/$(LIBNAME)
+
+obj/$(LIBNAME): $(LUAOBJ) $(HOBJ) $(LIBCOBJ) $(JITOBJS) $(EXTRAOBJS)
+	gcc -shared -Wl,-soname,$(LIBNAME) -o $@ $^ 
+
 $(LUAOBJ): obj/lua_%.o: %.lua Makefile
 	luajit -bg $< $@
 
 $(COBJ): obj/%.o: %.c $(CHDR) Makefile
-	gcc -Wl,-E -I ../deps/luajit/src -c -Wall -Werror -o $@ $<
+	gcc -fPIC -Wl,-E -I ../deps/luajit/src -c -Wall -Werror -o $@ $<
 
 $(HOBJ): obj/%_h.o: %.h Makefile
 	@echo Generating $(basename $@).lua from $< - $(basename $@)
@@ -47,7 +56,7 @@ obj/jit_tprof.o: extra/tprof.lua
 	luajit -bg -n jit.tprof $< $@
 
 obj/jit_vmprof.o: extra/vmprof.c
-	gcc -Wl,-E -O2 -I ../deps/luajit/src -c -Wall -Werror -o $@ $<
+	gcc -fPIC -Wl,-E -O2 -I ../deps/luajit/src -c -Wall -Werror -o $@ $<
 
 doc/obj/%.lua.md : %.lua Makefile
 	awk '/^ *[^-]{3}/ {if (last~/^ *---/) printf("\n")} {print} {last=$$0}' < $< | sed -E -e 's/^/    /g' -e 's/^    --- ?//g' > $@
