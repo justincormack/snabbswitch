@@ -68,9 +68,11 @@ function initialize ()
    require("lib_h")
 end
 
+function repl_args() return arg end
+
 function command_line_args()
-   local arg = arg or nil
-   if arg then return arg end -- running from repl
+   local ok, arg = pcall(repl_args)
+   if ok then return arg end
    local args = {}
    for i = 1, C.argc - 1 do
       args[i] = ffi.string(C.argv[i])
