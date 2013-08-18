@@ -69,6 +69,7 @@ function initialize ()
 end
 
 function command_line_args()
+   local arg = arg
    if arg then return arg end -- running from repl
    local args = {}
    for i = 1, C.argc - 1 do
