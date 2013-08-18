@@ -10,6 +10,7 @@ HOBJ   := $(patsubst %.h,obj/%_h.o,$(CHDR))
 JITOBJS:= $(patsubst %,obj/jit_%.o,$(JITSRC))
 EXTRAOBJS := obj/jit_tprof.o obj/jit_vmprof.o obj/strict.o
 MDOBJS := $(patsubst %, doc/obj/%.md, $(LUASRC) $(CSRC) $(CHDR)) $(wildcard *.md)
+REPLOBJS:= obj/memory.o obj/tuntap.o obj/virtio_vhost_client.o
 
 PATH := ../deps/luajit/usr/local/bin:$(PATH)
 
@@ -26,7 +27,7 @@ $(LUAOBJ): obj/lua_%.o: %.lua Makefile
 	luajit -bg $< $@
 
 $(COBJ): obj/%.o: %.c $(CHDR) Makefile
-	gcc -Wl,-E -I ../deps/luajit/src -c -Wall -Werror -o $@ $<
+	gcc -fPIC -Wl,-E -I ../deps/luajit/src -c -Wall -Werror -o $@ $<
 
 $(HOBJ): obj/%_h.o: %.h Makefile
 	@echo Generating $(basename $@).lua from $< - $(basename $@)
@@ -48,6 +49,11 @@ obj/jit_tprof.o: extra/tprof.lua
 
 obj/jit_vmprof.o: extra/vmprof.c
 	gcc -Wl,-E -O2 -I ../deps/luajit/src -c -Wall -Werror -o $@ $<
+
+obj/snabbrepl.so: $(REPLOBJS)
+	gcc -shared -Wl,-soname,libsnabbrepl.so -o obj/libsnabbrepl.so $(REPLOBJS)
+
+repl:	obj/snabbrepl.so $(LUAOBJ) $(COBJ) $(HOBJ)
 
 doc/obj/%.lua.md : %.lua Makefile
 	awk '/^ *[^-]{3}/ {if (last~/^ *---/) printf("\n")} {print} {last=$$0}' < $< | sed -E -e 's/^/    /g' -e 's/^    --- ?//g' > $@

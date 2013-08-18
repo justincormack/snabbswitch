@@ -69,6 +69,7 @@ function initialize ()
 end
 
 function command_line_args()
+   if arg then return arg end -- running from repl
    local args = {}
    for i = 1, C.argc - 1 do
       args[i] = ffi.string(C.argv[i])
