@@ -10,7 +10,7 @@ HOBJ   := $(patsubst %.h,obj/%_h.o,$(CHDR))
 JITOBJS:= $(patsubst %,obj/jit_%.o,$(JITSRC))
 EXTRAOBJS := obj/jit_tprof.o obj/jit_vmprof.o obj/strict.o
 MDOBJS := $(patsubst %, doc/obj/%.md, $(LUASRC) $(CSRC) $(CHDR)) $(wildcard *.md)
-REPLOBJS:= obj/memory.o obj/tuntap.o obj/virtio_vhost_client.o
+REPLOBJS:= obj/memory.o obj/tuntap.o obj/virtio_vhost_client.o obj/lib.o
 
 PATH := ../deps/luajit/usr/local/bin:$(PATH)
 
