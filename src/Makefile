@@ -10,7 +10,7 @@ HOBJ   := $(patsubst %.h,obj/%_h.o,$(CHDR))
 JITOBJS:= $(patsubst %,obj/jit_%.o,$(JITSRC))
 EXTRAOBJS := obj/jit_tprof.o obj/jit_vmprof.o obj/strict.o
 MDOBJS := $(patsubst %, doc/obj/%.md, $(LUASRC) $(CSRC) $(CHDR)) $(wildcard *.md)
-LIBNAME := libsnabbswitch.so.0.0
+LIBNAME := libsnabbswitch.so
 # exclude snabbswitch.c as includes main()
 LIBCSRC := lib.c memory.c pci.c snabb_lib_init.c tuntap.c virtio_vhost_client.c
 LIBCOBJ := $(patsubst %.c,obj/%.o,$(LIBCSRC))
